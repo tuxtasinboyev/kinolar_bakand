@@ -29,7 +29,7 @@ export class SuperAdminService {
 
   async findAll() {
     const [information, total] = await Promise.all([
-      this.prisma.user.findMany(),
+      this.prisma.user.findMany({ where: { role: 'admin' } }),
       this.prisma.user.count(),
     ]);
     return {
