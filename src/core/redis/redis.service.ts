@@ -7,21 +7,24 @@ export class RedisService implements OnModuleInit {
 
     async onModuleInit() {
         this.redis_client = new Redis({
-            host: '127.0.0.1',
-            port: 6379
+            host: 'redis-11971.c8.us-east-1-3.ec2.redns.redis-cloud.com',
+            port: 11971,
+            username: 'default',
+            password: 'BsQ77q1LdFnS8jpRHC24ViCRflxDuwRV',
+            tls: {}
         });
 
         this.redis_client.on('connect', () => {
-            console.log('Redis connected (localhost)');
+            console.log('Redis connected successfully');
         });
 
         this.redis_client.on('error', (err) => {
-            console.error(' Redis error:', err);
+            console.error('Redis connection error:', err);
         });
     }
 
-    async set(key: string, code: string, second: number) {
-        return await this.redis_client.set(key, code, 'EX', second);
+    async set(key: string, value: string, second: number) {
+        return await this.redis_client.set(key, value, 'EX', second);
     }
 
     async get(key: string) {
