@@ -14,6 +14,7 @@ import { ProfileModule } from './global/profile/profile.module';
 import { SubscriptioPlanModule } from './global/subscriptio_plan/subscriptio_plan.module';
 import { SuperAdminModule } from './global/super-admin/super-admin.module';
 import { WatchHistoryModule } from './global/watch-history/watch-history.module';
+import { SeadersModule } from './global/seaders/seaders.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { WatchHistoryModule } from './global/watch-history/watch-history.module'
     ServeStaticModule.forRoot({
       rootPath: path.join(process.cwd(), 'src', 'uploads'),
     }),
+    SeadersModule,
   ],
 })
 export class AppModule { }
