@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import { CoreModule } from './core/core.module';
 
-import { AdminPanelModule } from './global/admin_panel/admin_panel.module';
+import { AdminPanelModule } from './global/admin_panel_movie/admin_panel.module';
 import { AuthModule } from './global/auth/auth.module';
 import { CategoryModule } from './global/category/category.module';
 import { ComentsModule } from './global/coments/coments.module';

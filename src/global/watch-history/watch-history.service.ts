@@ -7,45 +7,6 @@ import { CustomErrorService } from 'src/core/custom-error/custom-error.service';
 @Injectable()
 export class WatchHistoryService {
   constructor(private prisma: PrismaService, private customErrors: CustomErrorService) { }
-  async create(createWatchHistoryDto: CreateWatchHistoryDto, user_id: string) {
-    const exists = await this.prisma.watchHistory.findUnique({
-      where: {
-        userId_movieId: {
-          userId: user_id,
-          movieId: createWatchHistoryDto.movieId
-        }
-      }
-    })
-    if (exists) {
-      return await this.prisma.watchHistory.update({
-        where: {
-          userId_movieId: {
-            userId: user_id,
-            movieId: createWatchHistoryDto.movieId
-          }
-        },
-        data: {
-          watchedDuration: createWatchHistoryDto.watchedDuration,
-          watchedPercentage: createWatchHistoryDto.watchedPercentage,
-          lastWatched: new Date()
-        }
-      })
-    }
-    const result = await this.prisma.watchHistory.create({
-      data: {
-        userId: user_id,
-        movieId: createWatchHistoryDto.movieId,
-        watchedDuration: createWatchHistoryDto.watchedDuration,
-        watchedPercentage: createWatchHistoryDto.watchedPercentage
-      }
-    })
-    return {
-      success: true,
-      message: "successfully created",
-      data: result
-    }
-  }
-
   async findAll(user_id: string) {
     const [information, total] = await Promise.all([
       this.prisma.watchHistory.findMany({
@@ -85,6 +46,33 @@ export class WatchHistoryService {
     return {
       success: true,
       message: "successfully deleted"
+    }
+  }
+  async update(movie_id: string, user_id: string, payload: UpdateWatchHistoryDto) {
+    const existing = await this.prisma.watchHistory.findUnique({
+      where: {
+        userId_movieId: {
+          movieId: movie_id,
+          userId: user_id
+        }
+      }
+    })
+    if (!existing) {
+      throw new NotFoundException('Watch history not found');
+    }
+    const result = await this.prisma.watchHistory.update({
+      where: {
+        userId_movieId: {
+          userId: user_id,
+          movieId: movie_id,
+        },
+      },
+      data: payload
+    });
+    return {
+      success: true,
+      message: "successfully updated",
+      data: result
     }
   }
 }

@@ -16,9 +16,9 @@ import {
   ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiParam, ApiBody, ApiResponse
 } from '@nestjs/swagger';
 
-@ApiTags('Admin Panel')
+@ApiTags('Admin Panel Movie')
 @ApiBearerAuth()
-@Controller('admin-panel')
+@Controller('admin-panel-movie')
 export class AdminPanelController {
   constructor(private readonly adminPanelService: AdminPanelService) { }
 
@@ -87,13 +87,14 @@ export class AdminPanelController {
   }
 
   @UseGuards(GuardService)
-  @Roles('admin')
+  @Roles('admin', 'user')
   @Get(':id')
   @ApiOperation({ summary: "Get a movie by ID" })
   @ApiParam({ name: "id", description: "Movie ID (UUID)" })
   @ApiResponse({ status: 200, description: "Movie successfully retrieved" })
-  async findOne(@Param('id') id: string) {
-    return await this.adminPanelService.findOne(id);
+  async findOne(@Param('id') id: string, @Req() req) {
+    const user_id = req['id']
+    return await this.adminPanelService.findOne(id, user_id);
   }
 
   @UseGuards(GuardService)
@@ -103,28 +104,28 @@ export class AdminPanelController {
   @ApiParam({ name: "id", description: "Movie ID (UUID)" })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-  required: false,
-  description: 'Update movie with optional poster upload',
-  schema: {
-    type: 'object',
-    properties: {
-      title: { type: 'string', example: 'New title' },
-      description: { type: 'string', example: 'Updated description' },
-      release_year: { type: 'integer', example: 2024 },
-      duration_minutes: { type: 'integer', example: 120 },
-      category_ids: {
-        type: 'array',
-        items: { type: 'string', format: 'uuid' },
-        example: ['91b2e5b5-5543-4c89-800f-a4eae6b23e2d']
-      },
-      poster: {
-        type: 'string',
-        format: 'binary',
-        description: 'Optional poster image file'
+    required: false,
+    description: 'Update movie with optional poster upload',
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', example: 'New title' },
+        description: { type: 'string', example: 'Updated description' },
+        release_year: { type: 'integer', example: 2024 },
+        duration_minutes: { type: 'integer', example: 120 },
+        category_ids: {
+          type: 'array',
+          items: { type: 'string', format: 'uuid' },
+          example: ['91b2e5b5-5543-4c89-800f-a4eae6b23e2d']
+        },
+        poster: {
+          type: 'string',
+          format: 'binary',
+          description: 'Optional poster image file'
+        }
       }
     }
-  }
-})
+  })
 
   @ApiResponse({ status: 200, description: "Movie successfully updated" })
   @UseInterceptors(FileInterceptor('poster', {

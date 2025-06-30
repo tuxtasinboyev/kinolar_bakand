@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateAdminPanelDto } from './dto/update-admin_panel.dto';
 import { PrismaService } from 'src/core/prisma/prisma.service';
@@ -6,6 +6,8 @@ import { CustomErrorService } from 'src/core/custom-error/custom-error.service';
 import { v4 as uuidV4 } from "uuid"
 import { Prisma } from '@prisma/client';
 import { FileUploads } from './dto/movie.file.dto';
+import * as path from "path"
+import * as fs from "fs"
 
 @Injectable()
 export class AdminPanelService {
@@ -62,17 +64,67 @@ export class AdminPanelService {
   }
 
 
-  async findOne(id: string) {
-    const result = await this.prisma.movie.findUnique({ where: { id } })
-    if (!result) throw new NotFoundException("move not found")
-    return {
-      success: true,
-      data: result
+  async findOne(id: string, user_id: string) {
+    const movie = await this.prisma.movie.findUnique({ where: { id } });
+    if (!movie) throw new NotFoundException('Movie not found');
+
+    if (!movie.durationMinutes || movie.durationMinutes <= 0) {
+      throw new BadRequestException('Movie duration is invalid');
     }
+
+    const watchedDuration = Math.floor(Math.random() * movie.durationMinutes);
+
+    const watchedPercentage = Number(((watchedDuration / movie.durationMinutes) * 100).toFixed(2));
+
+    const existing = await this.prisma.watchHistory.findUnique({
+      where: {
+        userId_movieId: {
+          userId: user_id,
+          movieId: id
+        }
+      }
+    });
+
+    if (existing) {
+      const updated = await this.prisma.watchHistory.update({
+        where: {
+          userId_movieId: {
+            userId: user_id,
+            movieId: id
+          }
+        },
+        data: {
+          watchedDuration,
+          watchedPercentage,
+          lastWatched: new Date()
+        }
+      });
+
+      return { success: true, updated, data: movie };
+    }
+
+    const created = await this.prisma.watchHistory.create({
+      data: {
+        userId: user_id,
+        movieId: id,
+        watchedDuration,
+        watchedPercentage,
+        lastWatched: new Date()
+      }
+    });
+
+    return { success: true, message: 'this movie joined watch-history', data: movie };
   }
 
   async update(id: string, updateAdminPanelDto: UpdateAdminPanelDto, poster: string, user_id) {
-    await this.cusomErrors.findMovieById(id)
+    const oldProfile = await this.cusomErrors.findById(user_id)
+    const avatar_url = poster
+    if (poster && oldProfile.avatar_url) {
+      const oldPath = path.join(process.cwd(), 'uploads', oldProfile.avatar_url);
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
     const result = await this.prisma.movie.update({
       where: { id },
       data: {
@@ -103,7 +155,13 @@ export class AdminPanelService {
   }
 
   async remove(id: string) {
-    await this.cusomErrors.findMovieById(id)
+    const oldProfile = await this.cusomErrors.findById(id)
+    if (oldProfile.avatar_url) {
+      const oldPath = path.join(process.cwd(), 'uploads', oldProfile.avatar_url);
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
 
     await this.prisma.movie.delete({ where: { id } })
     return {
@@ -122,13 +180,13 @@ export class AdminPanelService {
         quality: payload.quality,
         language: payload.language,
         movieId: movie_id,
-        sizeMb:size_mb
+        sizeMb: size_mb
       }
     })
-    return{
-      success:true,
-      message:"The movie successfully upload ",
-      data:result
+    return {
+      success: true,
+      message: "The movie successfully upload ",
+      data: result
     }
   }
 
