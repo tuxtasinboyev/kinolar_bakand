@@ -24,5 +24,5 @@ export class CreateAuthDto {
     example: 'StrongPassword123!',
     description: 'Plain text password (will be hashed on backend)'
   })
-  password: string;
+  password_hash: string;
 }

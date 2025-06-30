@@ -16,43 +16,63 @@ export class AuthService {
     private prisma: PrismaService
   ) { }
   async register(createAuthDto: CreateAuthDto) {
-    await this.customService.findByEmail(createAuthDto.email)
-    const code = Math.floor(10000 + Math.random() * 90000)
+    await this.customService.findByEmail(createAuthDto.email);
 
-    await this.mailService.sendEmail(createAuthDto.email, 'Tasdiqlash kodi', code)
+    const code = Math.floor(10000 + Math.random() * 90000);
 
-    await this.redisServise.set(`register:${createAuthDto.email}`, JSON.stringify({ ...createAuthDto, code }), 1200)
+    await this.mailService.sendEmail(
+      createAuthDto.email,
+      'Tasdiqlash kodi',
+      code,
+    );
 
-    return 'send verification code i email'
+    const key = `register:${createAuthDto.email.toLowerCase()}`;
+
+    await this.redisServise.set(
+      key,
+      JSON.stringify({ ...createAuthDto, code }),
+      1200,
+    );
+
+    return 'send verification code in email';
   }
 
   async Verification(codeVerify: VerifyDto) {
-    const redisUser = await this.redisServise.get(`register:${codeVerify.email}`)
-    if (!redisUser) throw new NotFoundException("this user not found in the redis!")
+    const key = `register:${codeVerify.email.toLowerCase()}`;
+    const redisUser = await this.redisServise.get(key);
 
-    const userData = JSON.parse(redisUser)
-    if (userData.code != codeVerify.code) throw new ConflictException("verification code invalid!")
+    if (!redisUser)
+      throw new NotFoundException('this user not found in the redis!');
 
-    const hasshPassword = await bcrypt.hash(userData.password_hash, 10)
+    const userData = JSON.parse(redisUser);
+
+    if (userData.code != codeVerify.code)
+      throw new ConflictException('verification code invalid!');
+
+    const hasshPassword = await bcrypt.hash(userData.password_hash, 10);
+
     const result = await this.prisma.user.create({
       data: {
         username: userData.username,
         email: codeVerify.email,
         password_hash: hasshPassword,
-      }
-    })
-    const { password_hash, avatar_url, ...safeUser } = result
-    const accessToken = await this.tokenServie.accessToken(safeUser)
-    const refreshToken = await this.tokenServie.refreshToken(safeUser)
+      },
+    });
+
+    const { password_hash, avatar_url, ...safeUser } = result;
+
+    const accessToken = await this.tokenServie.accessToken(safeUser);
+    const refreshToken = await this.tokenServie.refreshToken(safeUser);
+
     return {
       success: true,
-      message: "successfully register",
+      message: 'successfully registered',
       data: safeUser,
       accessToken,
-      refreshToken
-
-    }
+      refreshToken,
+    };
   }
+
   async login(payload: LoginDto) {
     const existUser = await this.customService.existEmail(payload.email)
 
