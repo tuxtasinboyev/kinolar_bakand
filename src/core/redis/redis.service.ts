@@ -6,12 +6,8 @@ export class RedisService implements OnModuleInit {
   private redis_client: RedisClient;
 
   async onModuleInit() {
-    this.redis_client = new Redis({
-      port: 11971,
-      host: 'redis-11971.c8.us-east-1-3.ec2.redns.redis-cloud.com',
-      username: 'default',
-      password: 'BsQ77q1LdFnS8jpRHC24ViCRflxDuwRV',
-    });
+    this.redis_client = new Redis('rediss://default:0c9706fde38a4fa797a3c52a0ca34ba2@gusc1-enabled-griffon-32054.upstash.io:32054');
+
 
     this.redis_client.on('connect', () => {
       console.log('Redis connected successfully');
