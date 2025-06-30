@@ -44,7 +44,7 @@ export class SubscriptioPlanService {
     });
     const startDate = new Date()
     const endDate = new Date()
-    endDate.setDate(startDate.getDate() + plan.duration_days)
+    endDate.setDate(startDate.getDate() + plan.duration_days * 24 * 60 * 1000)
     const UserSubscriptionCreate = await this.prisma.userSubscription.create({
       data: {
         autoRenew: payload.auto_renew,
