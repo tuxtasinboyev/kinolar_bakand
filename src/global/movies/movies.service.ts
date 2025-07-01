@@ -6,6 +6,8 @@ import { CustomErrorService } from 'src/core/custom-error/custom-error.service';
 export class MoviesService {
   constructor(private prisma: PrismaService, private customError: CustomErrorService) { }
   async findOne(slug: string, user_id?: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_read === false) throw new NotFoundException("user's permission not found or you don't alowed can_read!")
     const movie = await this.prisma.movie.findUnique({
       where: { slug },
       include: {

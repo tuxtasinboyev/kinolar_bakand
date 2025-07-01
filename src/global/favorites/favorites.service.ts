@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { PrismaService } from 'src/core/prisma/prisma.service';
@@ -57,6 +57,8 @@ export class FavoritesService {
     }
   }
   async remove(movie_id: string, user_id: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_delete === false) throw new NotFoundException("user's permission not found or you don't alowed can_delete!")
     await this.customError.findMovieById(movie_id)
 
     await this.prisma.favorite.delete({

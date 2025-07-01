@@ -30,7 +30,7 @@ export class SuperAdminService {
   async findAll() {
     const [information, total] = await Promise.all([
       this.prisma.user.findMany({ where: { role: 'admin' } }),
-      this.prisma.user.count(),
+      this.prisma.user.count({ where: { role: 'admin' } }),
     ]);
     return {
       success: true,
@@ -49,15 +49,29 @@ export class SuperAdminService {
     }
   }
 
-  async update(id: string, updateSuperAdminDto: UpdateSuperAdminDto, file: string) {
-    await this.customErrors.findByUserId(id)
-    const result = await this.prisma.user.update({ where: { id }, data: { ...updateSuperAdminDto, avatar_url: file } })
-    const { password_hash, ...safeUser } = result
+  async update(id: string, updateSuperAdminDto: UpdateSuperAdminDto, file: string | null = null) {
+    await this.customErrors.findByUserId(id);
+
+    const hashedPassword = await bcrypt.hash(updateSuperAdminDto.password_hash || 'Omadbek', 10);
+    const { username, email } = updateSuperAdminDto;
+
+    const result = await this.prisma.user.update({
+      where: { id },
+      data: {
+        username,
+        email,
+        password_hash: hashedPassword,
+        avatar_url: file,
+      },
+    });
+    const { password_hash, ...safeUser } = result;
+
     return {
       success: true,
-      safeUser
-    }
+      safeUser,
+    };
   }
+
 
   async remove(id: string) {
     await this.customErrors.findByUserId(id)

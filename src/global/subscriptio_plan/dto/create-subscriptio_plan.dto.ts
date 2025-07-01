@@ -33,12 +33,12 @@ export class CreateSubscriptionPlanDto {
   duration_days: number;
 
   @ApiProperty({
-    example: ['Watch unlimited movies', 'Download available'],
-    description: 'List of features included in the subscription plan',
-    type: [String],
+    example: [
+      { reclama: false },
+      { download: true }
+    ]
   })
   @IsArray()
-  @IsString({ each: true })
   features: string[];
 
   @ApiProperty({

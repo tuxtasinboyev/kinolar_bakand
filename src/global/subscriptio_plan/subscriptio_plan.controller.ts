@@ -10,7 +10,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nes
 @ApiBearerAuth()
 @Controller('subscriptio-plan')
 export class SubscriptioPlanController {
-  constructor(private readonly subscriptioPlanService: SubscriptioPlanService) {}
+  constructor(private readonly subscriptioPlanService: SubscriptioPlanService) { }
 
   @UseGuards(GuardService)
   @Roles('superadmin', 'admin')
@@ -18,8 +18,9 @@ export class SubscriptioPlanController {
   @ApiOperation({ summary: 'Create a new subscription plan' })
   @ApiBody({ type: CreateSubscriptionPlanDto })
   @ApiResponse({ status: 201, description: 'Subscription plan successfully created' })
-  async create(@Body() createSubscriptioPlanDto: CreateSubscriptionPlanDto) {
-    return this.subscriptioPlanService.create(createSubscriptioPlanDto);
+  async create(@Body() createSubscriptioPlanDto: CreateSubscriptionPlanDto, @Req() req) {
+    const user_id = req['id']
+    return this.subscriptioPlanService.create(createSubscriptioPlanDto, user_id);
   }
 
   @Get('getSubscription')

@@ -10,16 +10,19 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@ne
 @ApiBearerAuth()
 @Controller('coments')
 export class ComentsController {
-  constructor(private readonly comentsService: ComentsService) {}
+  constructor(private readonly comentsService: ComentsService) { }
 
   @UseGuards(GuardService)
   @Roles('user')
-  @Post('addReview')
+  @Post('addReview:slug')
   @ApiOperation({ summary: 'Add a review to a movie (user only)' })
+  @ApiParam({ name: 'slug', description: 'Movie slug (unique identifier)', example: 'avengers-endgame' })
   @ApiResponse({ status: 201, description: 'Review successfully created' })
-  async create(@Body() createComentDto: CreateComentDto, @Req() req) {
+  @ApiResponse({ status: 201, description: 'Review successfully created' })
+  @ApiResponse({ status: 400, description: 'Invalid data or movie not found' })
+  async create(@Body() createComentDto: CreateComentDto, @Req() req, @Param('slug') slug: string) {
     const user_id = req['id'];
-    return this.comentsService.create(createComentDto, user_id);
+    return this.comentsService.create(createComentDto, user_id, slug);
   }
 
   @UseGuards(GuardService)
@@ -29,11 +32,7 @@ export class ComentsController {
   @ApiParam({ name: 'movie_id', description: 'Movie ID (UUID)' })
   @ApiParam({ name: 'review_id', description: 'Review ID (UUID)' })
   @ApiResponse({ status: 200, description: 'Review successfully deleted' })
-  remove(
-    @Param('movie_id') movie_id: string,
-    @Param('review_id') review_id: string,
-    @Req() req
-  ) {
+  remove(@Param('movie_id') movie_id: string, @Param('review_id') review_id: string, @Req() req) {
     const user_id = req['id'];
     return this.comentsService.remove(user_id, review_id, movie_id);
   }
@@ -53,7 +52,8 @@ export class ComentsController {
   @ApiOperation({ summary: 'Delete all reviews for a movie (admin only)' })
   @ApiParam({ name: 'movie_id', description: 'Movie ID (UUID)' })
   @ApiResponse({ status: 200, description: 'All reviews for the movie successfully deleted' })
-  async deletedAllReaview(@Param('movie_id') movie_id: string) {
-    return await this.comentsService.deleteAllReviews(movie_id);
+  async deletedAllReaview(@Param('movie_id') movie_id: string, @Req() req) {
+    const user_id = req['id']
+    return await this.comentsService.deleteAllReviews(movie_id, user_id);
   }
 }

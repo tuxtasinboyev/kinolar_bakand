@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSubscriptionPlanDto } from './dto/create-subscriptio_plan.dto';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { CustomErrorService } from 'src/core/custom-error/custom-error.service';
@@ -7,7 +7,9 @@ import { PurchaseSubscriptionDto } from './dto/by-subscriptions.dto';
 @Injectable()
 export class SubscriptioPlanService {
   constructor(private prisma: PrismaService, private customError: CustomErrorService) { }
-  async create(createSubscriptioPlanDto: CreateSubscriptionPlanDto) {
+  async create(createSubscriptioPlanDto: CreateSubscriptionPlanDto, user_id: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_add === false) throw new NotFoundException("user's permission not found or you don't alowed can_add!")
     const result = await this.prisma.subscription_plans.create(
       {
         data: {
@@ -38,13 +40,12 @@ export class SubscriptioPlanService {
   }
   async subscriptionPurchase(payload: PurchaseSubscriptionDto, user_id: string) {
     const plans = await this.customError.findBySubsicriptId(payload.plan_id)
-
     const plan = await this.prisma.subscription_plans.findUniqueOrThrow({
       where: { id: payload.plan_id },
     });
     const startDate = new Date()
     const endDate = new Date()
-    endDate.setDate(startDate.getDate() + plan.duration_days * 24 * 60 * 1000)
+    endDate.setDate(startDate.getDate() + plan.duration_days)
     const UserSubscriptionCreate = await this.prisma.userSubscription.create({
       data: {
         autoRenew: payload.auto_renew,
@@ -88,6 +89,5 @@ export class SubscriptioPlanService {
       }
     }
   }
-
 
 }

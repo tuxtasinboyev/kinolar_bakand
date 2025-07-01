@@ -12,7 +12,9 @@ import * as fs from "fs"
 @Injectable()
 export class AdminPanelService {
   constructor(private prisma: PrismaService, private cusomErrors: CustomErrorService) { }
-  async create(createAdminPanelDto: CreateMovieDto, poster: string, user_id: string) {
+  async create(createAdminPanelDto: CreateMovieDto, poster: string | null, user_id: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_add === false) throw new NotFoundException("user's permission not found or you don't alowed can_add!")
     const findUser = await this.cusomErrors.findByUserId(user_id)
     const findCategories = await this.prisma.category.findMany({
       where: {
@@ -50,7 +52,9 @@ export class AdminPanelService {
     }
   }
 
-  async findAll() {
+  async findAll(user_id: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_read === false) throw new NotFoundException("user's permission not found or you don't alowed can_read!")
     const result = await this.prisma.movie.findMany()
     const total = await this.prisma.movie.count()
 
@@ -65,6 +69,8 @@ export class AdminPanelService {
 
 
   async findOne(id: string, user_id: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_read === false) throw new NotFoundException("user's permission not found or you don't alowed can_read!")
     const movie = await this.prisma.movie.findUnique({ where: { id } });
     if (!movie) throw new NotFoundException('Movie not found');
 
@@ -116,8 +122,23 @@ export class AdminPanelService {
     return { success: true, message: 'this movie joined watch-history', data: movie };
   }
 
-  async update(id: string, updateAdminPanelDto: UpdateAdminPanelDto, poster: string, user_id) {
-    const oldProfile = await this.cusomErrors.findById(user_id)
+  async update(id: string, updateAdminPanelDto: UpdateAdminPanelDto, user_id: string, poster: string | null = null,) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_update === false) throw new NotFoundException("user's permission not found or you don't alowed !")
+    const oldProfile = await this.cusomErrors.findByUserId(user_id)
+    if (updateAdminPanelDto.category_ids && updateAdminPanelDto.category_ids.length > 0) {
+      const categories = await this.prisma.category.findMany({
+        where: {
+          id: {
+            in: updateAdminPanelDto.category_ids,
+          },
+        },
+      });
+
+      if (categories.length !== updateAdminPanelDto.category_ids.length) {
+        throw new NotFoundException("One or more categories not found");
+      }
+    }
     const avatar_url = poster
     if (poster && oldProfile.avatar_url) {
       const oldPath = path.join(process.cwd(), 'uploads', oldProfile.avatar_url);

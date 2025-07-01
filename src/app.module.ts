@@ -15,6 +15,9 @@ import { SubscriptioPlanModule } from './global/subscriptio_plan/subscriptio_pla
 import { SuperAdminModule } from './global/super-admin/super-admin.module';
 import { WatchHistoryModule } from './global/watch-history/watch-history.module';
 import { SeadersModule } from './global/seaders/seaders.module';
+import { PermissionModule } from './global/permission/permission.module';
+import { UsersModule } from './global/users/users.module';
+import { PaymentModule } from './global/payment/payment.module';
 
 @Module({
   imports: [
@@ -33,6 +36,9 @@ import { SeadersModule } from './global/seaders/seaders.module';
       rootPath: path.join(process.cwd(), 'src', 'uploads'),
     }),
     SeadersModule,
+    PermissionModule,
+    UsersModule,
+    PaymentModule,
   ],
 })
 export class AppModule { }
