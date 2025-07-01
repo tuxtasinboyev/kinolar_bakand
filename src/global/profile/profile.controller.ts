@@ -28,7 +28,6 @@ export class ProfileController {
   constructor(private readonly profileService: ProfileService) { }
 
   @UseGuards(GuardService)
-  @Roles('user', 'admin', 'superadmin')
   @Post('create-profile')
   @ApiOperation({ summary: 'Profil yaratish (avatar bilan)' })
   @ApiConsumes('multipart/form-data')
@@ -48,7 +47,7 @@ export class ProfileController {
   })
   @UseInterceptors(FileInterceptor('avatar', {
     storage: diskStorage({
-      destination: path.join(process.cwd(), "uploads"),
+      destination: path.join(process.cwd(), "src", "uploads", "avatar"),
       filename: (req, file, cb) => {
         const ext = path.extname(file.originalname);
         const filename = `${uuidV4()}${ext}`;
@@ -98,7 +97,7 @@ export class ProfileController {
   })
   @UseInterceptors(FileInterceptor('avatar', {
     storage: diskStorage({
-      destination: path.join(process.cwd(), "uploads"),
+      destination: path.join(process.cwd(), "src", "uploads", "avatar"),
       filename: (req, file, cb) => {
         const ext = path.extname(file.originalname);
         const filename = `${uuidV4()}${ext}`;

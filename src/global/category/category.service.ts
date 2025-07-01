@@ -6,7 +6,9 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 @Injectable()
 export class CategoryService {
   constructor(private prisma: PrismaService) { }
-  async create(createCategoryDto: CreateCategoryDto) {
+  async create(createCategoryDto: CreateCategoryDto, user_id: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_add === false) throw new NotFoundException("user's permission not found or you don't alowed can_create!")
     const result = await this.prisma.category.create({
       data: {
         name: createCategoryDto.name,
@@ -39,7 +41,9 @@ export class CategoryService {
     };
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+  async update(id: string, updateCategoryDto: UpdateCategoryDto, user_id: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_update === false) throw new NotFoundException("user's permission not found or you don't alowed can_update!")
     const findCategory = await this.prisma.category.findUnique({ where: { id } })
     if (!findCategory) throw new NotFoundException("category not found!")
 
@@ -54,7 +58,9 @@ export class CategoryService {
 
   }
 
-  async remove(id: string) {
+  async remove(id: string, user_id: string) {
+    const checkUser = await this.prisma.permission.findUnique({ where: { userId: user_id } })
+    if (!checkUser || checkUser.can_delete === false) throw new NotFoundException("user's permission not found or you don't alowed can_delete!")
     const findCategory = await this.prisma.category.findUnique({ where: { id } })
     if (!findCategory) throw new NotFoundException("category not found!")
 

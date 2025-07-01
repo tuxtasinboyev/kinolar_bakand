@@ -89,7 +89,7 @@ export class SuperAdminController {
 
   @UseGuards(GuardService)
   @Roles('superadmin')
-  @Patch(':id')
+  @Patch(':id') 
   @ApiOperation({ summary: 'Update admin profile' })
   @ApiParam({ name: 'id', description: 'Admin ID (UUID)' })
   @ApiConsumes('multipart/form-data')
@@ -120,6 +120,9 @@ export class SuperAdminController {
       },
     }),
     fileFilter(req, file, callback) {
+      if (!file) {
+        callback(null, false)
+      }
       const allowed = ['image/jpeg', 'image/jpg', 'image/png'];
       if (!allowed.includes(file.mimetype)) {
         callback(new UnsupportedMediaTypeException("the type must be .jpeg|.jpg|.png"), false);
@@ -130,9 +133,13 @@ export class SuperAdminController {
   async update(
     @Param('id') id: string,
     @Body() updateSuperAdminDto: UpdateSuperAdminDto,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() file?: Express.Multer.File
   ) {
-    return await this.superAdminService.update(id, updateSuperAdminDto, file.filename);
+    if (file) {
+      return await this.superAdminService.update(id, updateSuperAdminDto, file.filename || null);
+    } else {
+      return await this.superAdminService.update(id, updateSuperAdminDto);
+    }
   }
 
   @UseGuards(GuardService)

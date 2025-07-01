@@ -5,7 +5,7 @@ export class CreateAuthDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'john_doe',
+    example: 'omadbeka',
     description: 'Unique username for the user'
   })
   username: string;
@@ -13,7 +13,7 @@ export class CreateAuthDto {
   @IsEmail()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'john@example.com',
+    example: 'omadbektuxtasinboyev06@gmail.com',
     description: 'User email address'
   })
   email: string;
@@ -21,7 +21,7 @@ export class CreateAuthDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'StrongPassword123!',
+    example: 'OMADBEK007!',
     description: 'Plain text password (will be hashed on backend)'
   })
   password_hash: string;

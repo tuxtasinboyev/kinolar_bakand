@@ -15,6 +15,7 @@ import { FileUploads } from './dto/movie.file.dto';
 import {
   ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiParam, ApiBody, ApiResponse
 } from '@nestjs/swagger';
+import { Request } from 'express';
 
 @ApiTags('Admin Panel Movie')
 @ApiBearerAuth()
@@ -39,7 +40,7 @@ export class AdminPanelController {
         duration_minutes: { type: 'integer', example: 181 },
         category_ids: {
           type: 'array',
-          items: { type: 'string', format: 'uuid' },
+          items: { type: 'string' },
           example: ['d0a5e2e5-772c-4a3f-a69d-93dfdb24d84a']
         },
         poster: {
@@ -65,6 +66,9 @@ export class AdminPanelController {
       }
     }),
     fileFilter(req, file, callback) {
+      if(!file){
+       return callback(null,false)
+      }
       const allowed: string[] = ['image/jpeg', 'image/jpg', 'image/png']
       if (!allowed.includes(file.mimetype)) {
         callback(new UnsupportedMediaTypeException("The type must be .jpeg|.jpg|.png"), false)
@@ -74,7 +78,10 @@ export class AdminPanelController {
   }))
   async create(@Body() createAdminPanelDto: CreateMovieDto, @UploadedFile() poster: Express.Multer.File, @Req() req) {
     const user_id = req['id']
-    return await this.adminPanelService.create(createAdminPanelDto, poster.filename, user_id);
+    console.log(typeof createAdminPanelDto.category_ids);
+    
+
+    return await this.adminPanelService.create(createAdminPanelDto, poster.filename||null, user_id);
   }
 
   @UseGuards(GuardService)
@@ -82,8 +89,9 @@ export class AdminPanelController {
   @Get()
   @ApiOperation({ summary: "Get all movies" })
   @ApiResponse({ status: 200, description: "Movies successfully retrieved" })
-  async findAll() {
-    return await this.adminPanelService.findAll();
+  async findAll(@Req() req) {
+    const user_id = req['id']
+    return await this.adminPanelService.findAll(user_id);
   }
 
   @UseGuards(GuardService)
@@ -144,9 +152,14 @@ export class AdminPanelController {
       callback(null, true)
     },
   }))
-  async update(@Param('id') id: string, @Body() updateAdminPanelDto: UpdateAdminPanelDto, @UploadedFile() poster: Express.Multer.File, @Req() req) {
+  async update(@Param('id') id: string, @Body() updateAdminPanelDto: UpdateAdminPanelDto, @Req() req : Request, @UploadedFile() poster?: Express.Multer.File,) {
     const user_id = req['id']
-    return await this.adminPanelService.update(id, updateAdminPanelDto, poster.filename, user_id);
+    if(poster && poster.filename){
+      return await this.adminPanelService.update(id, updateAdminPanelDto, user_id, poster.filename );
+    }else {
+      return await this.adminPanelService.update(id, updateAdminPanelDto, user_id);
+
+    }
   }
 
   @UseGuards(GuardService)

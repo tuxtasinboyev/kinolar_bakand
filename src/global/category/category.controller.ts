@@ -6,7 +6,8 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards
+  UseGuards,
+  Req
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -26,8 +27,9 @@ export class CategoryController {
   @Post()
   @ApiOperation({ summary: 'Create new category' })
   @ApiResponse({ status: 201, description: 'Category successfully created' })
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoryService.create(createCategoryDto);
+  create(@Body() createCategoryDto: CreateCategoryDto, @Req() req) {
+    const user_id = req['id']
+    return this.categoryService.create(createCategoryDto, user_id);
   }
 
   @Get()
@@ -51,8 +53,9 @@ export class CategoryController {
   @ApiOperation({ summary: 'Update a category' })
   @ApiParam({ name: 'id', description: 'Category ID (UUID)' })
   @ApiResponse({ status: 200, description: 'Category successfully updated' })
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryService.update(id, updateCategoryDto);
+  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto, @Req() req) {
+    const user_id = req['id']
+    return this.categoryService.update(id, updateCategoryDto, user_id);
   }
 
   @UseGuards(GuardService)
@@ -61,7 +64,8 @@ export class CategoryController {
   @ApiOperation({ summary: 'Delete a category' })
   @ApiParam({ name: 'id', description: 'Category ID (UUID)' })
   @ApiResponse({ status: 200, description: 'Category successfully deleted' })
-  remove(@Param('id') id: string) {
-    return this.categoryService.remove(id);
+  remove(@Param('id') id: string, @Req() req) {
+    const user_id = req['id']
+    return this.categoryService.remove(id, user_id);
   }
 }

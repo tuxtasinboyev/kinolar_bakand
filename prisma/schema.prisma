@@ -63,6 +63,7 @@ model User {
   subscriptions UserSubscription[]
   movies        Movie[]            @relation("MovieCreator")
   watchHistory  WatchHistory[]
+  permission    Permission[]
 
   @@map("users")
 }
@@ -75,7 +76,7 @@ model Profile {
   phone      String
   country    String
   created_at DateTime @default(now())
-  user       User     @relation(fields: [user_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("profiles")
 }
@@ -102,8 +103,9 @@ model UserSubscription {
   autoRenew Boolean            @default(false)
   createdAt DateTime           @default(now())
 
-  user    User               @relation(fields: [userId], references: [id])
-  plan    Subscription_plans @relation(fields: [planId], references: [id])
+  user User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Subscription_plans @relation(fields: [planId], references: [id], onDelete: Cascade)
+
   payment Payment?
 
   @@map("user_subscription")
@@ -119,7 +121,7 @@ model Payment {
   externalTransactionId String?
   createdAt             DateTime      @default(now())
 
-  subscription UserSubscription @relation(fields: [userSubscriptionId], references: [id])
+  subscription UserSubscription @relation(fields: [userSubscriptionId], references: [id], onDelete: Cascade)
 
   @@map("payment")
 }
@@ -142,14 +144,14 @@ model Movie {
   description      String
   releaseYear      Int
   durationMinutes  Int
-  posterUrl        String
+  posterUrl        String?
   rating           Decimal          @db.Decimal(3, 1)
   subscriptionType SubscriptionType @default(free)
   viewCount        Int              @default(0)
   createdBy        String
   createdAt        DateTime         @default(now())
 
-  creator      User            @relation("MovieCreator", fields: [createdBy], references: [id])
+  creator      User            @relation("MovieCreator", fields: [createdBy], references: [id], onDelete: Cascade)
   categories   MovieCategory[]
   files        MovieFile[]
   favorites    Favorite[]
@@ -164,8 +166,8 @@ model MovieCategory {
   movieId    String
   categoryId String
 
-  movie    Movie    @relation(fields: [movieId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
+  movie    Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@map("movie_category")
 }
@@ -178,7 +180,7 @@ model MovieFile {
   language     String       @default("uz")
   fileUploadBy String
   sizeMb       Int
-  movie Movie @relation(fields: [movieId], references: [id])
+  movie        Movie        @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@map("movie_file")
 }
@@ -188,8 +190,8 @@ model Favorite {
   userId    String
   movieId   String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  movie     Movie    @relation(fields: [movieId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId])
   @@map("favorite")
@@ -203,8 +205,8 @@ model Review {
   comment   String
   createdAt DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id])
-  movie Movie @relation(fields: [movieId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId])
   @@map("review")
@@ -218,10 +220,21 @@ model WatchHistory {
   watchedPercentage Decimal  @db.Decimal(5, 2)
   lastWatched       DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id])
-  movie Movie? @relation(fields: [movieId], references: [id])
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie? @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId])
   @@map("watch_history")
 }
 
+model Permission {
+  id         String  @id @default(uuid())
+  userId     String  @unique
+  can_read   Boolean @default(false)
+  can_add    Boolean @default(false)
+  can_update Boolean @default(false)
+  can_delete Boolean @default(false)
+  User       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("permissions")
+}

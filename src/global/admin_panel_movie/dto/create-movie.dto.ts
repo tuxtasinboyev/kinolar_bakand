@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString, IsArray, ArrayNotEmpty, IsUUID } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsString, IsArray, ArrayNotEmpty, IsUUID, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateMovieDto {
@@ -36,13 +36,14 @@ export class CreateMovieDto {
   @IsNotEmpty()
   duration_minutes: number;
 
-  @ApiProperty({
-    example: ['b0f3c44b-f33c-400b-9df1-5c611b2fb1d0', 'bfe3a227-e30f-4c7a-a89b-244cb45b17b1'],
-    description: 'Array of category UUIDs',
-    type: [String]
+  @Transform((e) => {
+    if (Array.isArray(e.value)) {
+      return e.value
+    }
+    return e.value.split(",")
   })
   @IsArray()
   @ArrayNotEmpty()
   @IsUUID('all', { each: true })
-  category_ids: string[];
+  category_ids: string[]
 }

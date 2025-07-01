@@ -7,8 +7,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
     transform: true,
   }));
 
@@ -16,14 +14,14 @@ async function bootstrap() {
     .setTitle('Kinolar sayti API')
     .setDescription('Foydalanuvchi, obuna va admin panel uchun OpenAPI hujjati')
     .setVersion('1.0')
-    .addBearerAuth() 
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/swagger', app, document); 
-  
-  
-  await app.listen(process.env.PORT ?? 3000);
-  console.log("http://localhost:3000/api/swagger");
+  SwaggerModule.setup('api/swagger', app, document);
+
+
+  await app.listen(process.env.PORT ?? 1709);
+  console.log("http://localhost:1709/api/swagger");
 }
 bootstrap();

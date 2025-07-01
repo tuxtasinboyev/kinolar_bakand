@@ -11,7 +11,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
+  @ApiOperation({ summary: 'this route sends to email your' })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   @ApiBody({ type: CreateAuthDto })
   async register(@Body() createAuthDto: CreateAuthDto) {
