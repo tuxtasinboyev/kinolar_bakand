@@ -210,5 +210,13 @@ export class AdminPanelService {
       data: result
     }
   }
+  async getmovieFile(movie_id: string) {
+    await this.cusomErrors.findMovieById(movie_id)
+    const result = this.prisma.movieFile.findFirst({ where: { movieId: movie_id } })
+    return {
+      success: true,
+      data: result
+    }
+  }
 
 }

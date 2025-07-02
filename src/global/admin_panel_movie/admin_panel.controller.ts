@@ -66,8 +66,8 @@ export class AdminPanelController {
       }
     }),
     fileFilter(req, file, callback) {
-      if(!file){
-       return callback(null,false)
+      if (!file) {
+        return callback(null, false)
       }
       const allowed: string[] = ['image/jpeg', 'image/jpg', 'image/png']
       if (!allowed.includes(file.mimetype)) {
@@ -79,9 +79,9 @@ export class AdminPanelController {
   async create(@Body() createAdminPanelDto: CreateMovieDto, @UploadedFile() poster: Express.Multer.File, @Req() req) {
     const user_id = req['id']
     console.log(typeof createAdminPanelDto.category_ids);
-    
 
-    return await this.adminPanelService.create(createAdminPanelDto, poster.filename||null, user_id);
+
+    return await this.adminPanelService.create(createAdminPanelDto, poster.filename || null, user_id);
   }
 
   @UseGuards(GuardService)
@@ -152,11 +152,11 @@ export class AdminPanelController {
       callback(null, true)
     },
   }))
-  async update(@Param('id') id: string, @Body() updateAdminPanelDto: UpdateAdminPanelDto, @Req() req : Request, @UploadedFile() poster?: Express.Multer.File,) {
+  async update(@Param('id') id: string, @Body() updateAdminPanelDto: UpdateAdminPanelDto, @Req() req: Request, @UploadedFile() poster?: Express.Multer.File,) {
     const user_id = req['id']
-    if(poster && poster.filename){
-      return await this.adminPanelService.update(id, updateAdminPanelDto, user_id, poster.filename );
-    }else {
+    if (poster && poster.filename) {
+      return await this.adminPanelService.update(id, updateAdminPanelDto, user_id, poster.filename);
+    } else {
       return await this.adminPanelService.update(id, updateAdminPanelDto, user_id);
 
     }
@@ -222,5 +222,9 @@ export class AdminPanelController {
     const user_id = req['id'];
     const size_mb = file.size / (1024 * 1024)
     return await this.adminPanelService.addMovieFile(file.filename, payload, movie_id, user_id, size_mb)
+  }
+  @Get(':movie_id')
+  getMovieFile(@Param('movie_id') movie_id: string) {
+    return this.adminPanelService.getmovieFile(movie_id)
   }
 }
