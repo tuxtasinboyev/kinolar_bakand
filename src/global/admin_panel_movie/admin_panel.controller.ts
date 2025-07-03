@@ -224,7 +224,22 @@ export class AdminPanelController {
     return await this.adminPanelService.addMovieFile(file.filename, payload, movie_id, user_id, size_mb)
   }
   @Get(':movie_id')
+  @ApiOperation({ summary: 'Get movie file by movie ID' })
+  @ApiParam({
+    name: 'movie_id',
+    type: String,
+    description: 'Unique identifier of the movie',
+    example: '1234abcd',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Movie file returned successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Movie not found',
+  })
   getMovieFile(@Param('movie_id') movie_id: string) {
-    return this.adminPanelService.getmovieFile(movie_id)
+    return this.adminPanelService.getmovieFile(movie_id);
   }
 }
